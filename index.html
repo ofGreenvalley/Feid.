@@ -1,0 +1,2833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Doom</title>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Permanent+Marker&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+
+  <!-- Three.js & OrbitControls para el Mapa Holográfico Multiversal -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #07080a;
+      --card-bg: #111216;
+      --card-subtle: #191b22;
+      --card-hover: #222530;
+      --discord-blurple: #5865f2;
+      --discord-dnd: #f23f43;
+      --spotify-green: #1db954;
+      --text-main: #f3f4f6;
+      --text-muted: #8b929e;
+      --text-tertiary: #676d79;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --font-gothic: 'Cinzel', serif;
+      --font-sans: 'Inter', sans-serif;
+      --font-marker: 'Permanent Marker', cursive;
+      --font-serif: 'Playfair Display', serif;
+
+      /* Paleta Mapa Holográfico Multiversal */
+      --holo-green-dark: #07120a;
+      --holo-green-accent: #2c5939;
+      --holo-green-bright: #80ab91;
+      --holo-green-glow: rgba(128, 171, 145, 0.3);
+
+      /* Variables de Logros (Igualadas a la tonalidad de Museo / Aliados) */
+      --ach-panel-bg: rgba(5, 7, 10, 0.96);
+      --ach-card-bg: #111216;
+      --ach-subtle-bg: #191b22;
+      --green-glow: rgba(45, 90, 60, 0.85);
+      --green-border: #3c734f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      padding: clamp(12px, 3vw, 24px);
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 40%, rgba(35, 38, 55, 0.4) 0%, rgba(7, 8, 10, 0.98) 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* PANTALLA 1: PÍLDORA FLOTANTE */
+    .pill-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: clamp(340px, 92vw, 540px);
+      cursor: pointer;
+      animation: levitateWidget 4.2s ease-in-out infinite alternate;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+    }
+
+    .pill-wrapper:hover {
+      transform: translateY(-8px) scale(1.018);
+      filter: brightness(1.08);
+    }
+
+    .pill-wrapper:active {
+      transform: translateY(-2px) scale(0.985);
+    }
+
+    @keyframes levitateWidget {
+      0% {
+        transform: translateY(0px) rotate(0deg);
+        filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.7));
+      }
+      50% {
+        transform: translateY(-9px) rotate(-0.25deg);
+        filter: drop-shadow(0 20px 34px rgba(0, 0, 0, 0.85));
+      }
+      100% {
+        transform: translateY(-14px) rotate(0.25deg);
+        filter: drop-shadow(0 28px 44px rgba(0, 0, 0, 0.95));
+      }
+    }
+
+    .floating-pill {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: clamp(70px, 12vw, 82px);
+      padding: 6px clamp(12px, 3vw, 16px) 6px clamp(8px, 2vw, 12px);
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #171920 0%, #1d2029 45%, #272a37 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12),
+                  0 8px 30px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .pill-crow-overlay {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 58%;
+      height: 100%;
+      background-image: url('https://xatimg.com/image/J0PJhgx0i1sY.gif');
+      background-size: cover;
+      background-position: center right;
+      mix-blend-mode: screen;
+      opacity: 0.34;
+      pointer-events: none;
+      mask-image: linear-gradient(to right, transparent 0%, black 50%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 50%);
+    }
+
+    .pill-avatar-box {
+      position: relative;
+      width: clamp(52px, 10vw, 62px);
+      height: clamp(52px, 10vw, 62px);
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .pill-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      display: block;
+    }
+
+    .dnd-badge {
+      position: absolute;
+      bottom: -1px;
+      right: -2px;
+      width: clamp(18px, 3.5vw, 22px);
+      height: clamp(18px, 3.5vw, 22px);
+      background-color: var(--discord-dnd);
+      border-radius: 50%;
+      border: 3px solid #14161c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+    }
+
+    .dnd-bar {
+      width: clamp(8px, 1.8vw, 10px);
+      height: 2.5px;
+      background-color: #ffffff;
+      border-radius: 2px;
+    }
+
+    .pill-content {
+      flex: 1;
+      margin-left: clamp(10px, 2.5vw, 14px);
+      margin-right: clamp(8px, 2vw, 12px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .pill-username {
+      font-family: var(--font-gothic);
+      font-size: clamp(1.05rem, 2.6vw, 1.25rem);
+      font-weight: 700;
+      color: #eaecef;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+      line-height: 1.2;
+    }
+
+    .pill-username svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.85;
+      stroke-width: 2.5;
+    }
+
+    .pill-marquee-window {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      margin-top: 3px;
+      position: relative;
+      mask-image: linear-gradient(90deg, black 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, black 80%, transparent 100%);
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      align-items: center;
+      animation: continuousScroll 13s linear infinite;
+    }
+
+    .pill-wrapper:hover .marquee-track {
+      animation-play-state: paused;
+    }
+
+    .pill-marquee-text {
+      font-size: clamp(0.82rem, 1.9vw, 0.9rem);
+      color: #8f96a4;
+      font-weight: 500;
+      padding-right: 28px;
+    }
+
+    @keyframes continuousScroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .pill-bell-button {
+      width: clamp(40px, 7.5vw, 46px);
+      height: clamp(40px, 7.5vw, 46px);
+      border-radius: clamp(10px, 2vw, 14px);
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f1f3f5;
+      flex-shrink: 0;
+      z-index: 3;
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .pill-bell-button:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: scale(1.06);
+    }
+
+    /* PANTALLA 2 Y 3: MODAL PERFIL EXPANDIDO */
+    .profile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.84);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .profile-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .profile-sheet {
+      width: 100%;
+      max-width: 450px;
+      background: var(--card-bg);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      height: 88vh;
+      height: 88dvh;
+      max-height: 880px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.95);
+      overflow: hidden;
+    }
+
+    .profile-overlay.active .profile-sheet {
+      transform: translateY(0);
+    }
+
+    @media (min-width: 600px) {
+      .profile-overlay {
+        padding: 24px;
+      }
+    }
+
+    /* CABECERA FIJA */
+    .profile-fixed-header {
+      flex-shrink: 0;
+      background: var(--card-bg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 15;
+      position: relative;
+    }
+
+    .profile-banner {
+      width: 100%;
+      height: clamp(110px, 22vw, 135px);
+      position: relative;
+      overflow: hidden;
+      background-color: #1a1c24;
+    }
+
+    .profile-banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.85);
+    }
+
+    .profile-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(17, 18, 22, 0.85) 100%);
+      pointer-events: none;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      z-index: 10;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.06);
+    }
+
+    .avatar-quote-flex {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 0 clamp(16px, 3.5vw, 22px) 14px;
+      margin-top: -38px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .sheet-avatar-box {
+      position: relative;
+      width: clamp(72px, 14vw, 84px);
+      height: clamp(72px, 14vw, 84px);
+      flex-shrink: 0;
+    }
+
+    .sheet-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--card-bg);
+      background: var(--card-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+
+    .sheet-status-bubble {
+      background: var(--card-subtle);
+      border-radius: 16px 16px 16px 4px;
+      padding: 10px 14px;
+      font-size: clamp(0.84rem, 2vw, 0.9rem);
+      line-height: 1.35;
+      color: #cfd3dc;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      max-width: 250px;
+      margin-bottom: 30px;
+    }
+
+    /* ÁREA CON SCROLL */
+    .sheet-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px clamp(16px, 3.5vw, 22px) 90px;
+      scrollbar-width: thin;
+      scrollbar-color: #1a3d25 transparent;
+    }
+
+    .sheet-scroll-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .sheet-scroll-body::-webkit-scrollbar-thumb {
+      background: #1a3d25;
+      border-radius: 4px;
+    }
+
+    .sheet-name-block {
+      margin-bottom: 14px;
+    }
+
+    .sheet-main-name {
+      font-family: var(--font-gothic);
+      font-size: clamp(1.35rem, 3.2vw, 1.55rem);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(120deg, rgba(25, 89, 51, 1) 0%, rgba(128, 171, 145, 1) 23%, rgba(176, 212, 190, 1) 54%, rgba(255, 252, 252, 1) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sheet-main-name svg {
+      color: #a855f7;
+    }
+
+    .sheet-handle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .sheet-handle {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .sheet-badges {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--card-subtle);
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .badge-item {
+      font-size: 0.85rem;
+    }
+
+    .sheet-nav-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 16px;
+      gap: 16px;
+    }
+
+    .nav-tab-item {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 8px 4px 10px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .nav-tab-item.active {
+      color: #fff;
+    }
+
+    .nav-tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+    }
+
+    /* CONTENEDORES DE LAS PESTAÑAS (TABS) */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* GALERÍA DEL TABLERO */
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .board-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--card-subtle);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .board-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(100%);
+      transition: filter 0.35s ease, transform 0.35s ease;
+    }
+
+    .board-item:hover .board-img {
+      filter: grayscale(0%);
+      transform: scale(1.08);
+    }
+
+    .board-title-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .board-item:hover .board-title-overlay {
+      opacity: 1;
+    }
+
+    .board-title {
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      line-height: 1.2;
+    }
+
+    /* SPOTIFY */
+    .spotify-box {
+      background: linear-gradient(145deg, #17181f 0%, #121319 100%);
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .spotify-top-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #9aa0ad;
+      margin-bottom: 10px;
+    }
+
+    .spotify-top-label svg {
+      color: var(--spotify-green);
+    }
+
+    .spotify-media-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .spotify-album-cover {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .spotify-song-meta {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .spotify-song-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .spotify-artist {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .spotify-toggle-btn {
+      background: var(--spotify-green);
+      color: #000;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    .spotify-toggle-btn:hover {
+      transform: scale(1.08);
+      background: #1ed760;
+    }
+
+    .spotify-progress-container {
+      margin-top: 6px;
+    }
+
+    .spotify-progress-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .spotify-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--discord-blurple);
+      border-radius: 4px;
+      transition: width 0.1s linear;
+    }
+
+    .spotify-timestamps {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      color: #7d828f;
+      margin-top: 5px;
+      font-weight: 600;
+    }
+
+    .field-caption {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #898f9c;
+      margin-bottom: 8px;
+    }
+
+    .biography-quote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: #d2d5de;
+      font-size: 1.05rem;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    /* SECCIÓN MIEMBRO DESDE */
+    .member-since-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #cfd3dc;
+      font-size: 0.92rem;
+      font-weight: 500;
+      margin-bottom: 18px;
+    }
+
+    .member-since-box svg {
+      color: var(--text-muted);
+    }
+
+    /* SECCIÓN CONEXIONES */
+    .connections-card-box {
+      background: var(--card-subtle);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .connection-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .connection-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .connection-icon-box {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .connection-icon-img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    .connection-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .verified-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      background: #3b82f6;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+    }
+
+    /* SECCIÓN AMIGOS */
+    .friends-card-box {
+      background: var(--card-subtle);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .friends-card-box:hover {
+      background: var(--card-hover);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .friends-interactive-stack {
+      display: flex;
+      align-items: center;
+    }
+
+    .friend-avatar-link {
+      position: relative;
+      display: block;
+      margin-left: -8px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.1s;
+      text-decoration: none;
+    }
+
+    .friend-avatar-link:first-child {
+      margin-left: 0;
+    }
+
+    .friend-avatar-link:hover {
+      transform: translateY(-4px) scale(1.18);
+      z-index: 10;
+    }
+
+    .friend-img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--card-subtle);
+      object-fit: cover;
+      display: block;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .friend-avatar-link::after {
+      content: attr(data-friend-name);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: #000;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    }
+
+    .friend-avatar-link:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .friends-action-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: color 0.2s, transform 0.15s;
+    }
+
+    .friends-action-link:hover {
+      color: #fff;
+      transform: translateX(2px);
+    }
+
+    /* BARRA NAVEGACIÓN FLOTANTE INFERIOR DE 4 ÍCONOS */
+    .bottom-nav-container {
+      position: absolute;
+      bottom: 14px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      padding: 0 16px;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .custom-nav-bar {
+      pointer-events: auto;
+      background: #2C2F33;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 8px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .nav-bar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #f3f4f6;
+      cursor: pointer;
+      padding: 6px 4px;
+      border-radius: 14px;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .nav-bar-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .nav-bar-item i {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.2;
+    }
+
+    .nav-bar-item span {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .toast-popup {
+      position: fixed;
+      top: 24px;
+      background: rgba(25, 27, 34, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      transform: translateY(-100px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast-popup.visible {
+      transform: translateY(0);
+    }
+
+    /* ==========================================================
+       MODAL DE ALIADOS (ENTORNO CIBERNÉTICO INTERNO EN DISCORD)
+       ========================================================== */
+    .allies-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 7, 10, 0.96);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      overflow: hidden;
+      border-radius: 28px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .allies-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .allies-scanline {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+      z-index: 90;
+    }
+
+    #allies-bg-code-inner {
+      position: absolute;
+      inset: 0;
+      opacity: 0.18;
+      font-size: 10px;
+      line-height: 1.2;
+      white-space: pre;
+      color: #80ab91;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .allies-header-bar {
+      padding: 12px 16px;
+      background: rgba(17, 18, 22, 0.95);
+      border-bottom: 1px solid rgba(128, 171, 145, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .allies-header-title {
+      font-family: var(--font-gothic);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #80ab91;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .allies-header-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .allies-header-close:hover {
+      background: rgba(242, 63, 67, 0.8);
+      transform: scale(1.05);
+    }
+
+    #allies-desktop-viewport {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+      z-index: 2;
+      padding: 10px;
+    }
+
+    /* VENTANAS TERMINAL DE PERSONAJES DENTRO DE LA PANTALLA */
+    .ally-pop-window {
+      position: absolute;
+      width: 220px;
+      background: rgba(17, 18, 22, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      animation: allyPopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes allyPopIn {
+      from { transform: scale(0.7) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .ally-pop-header {
+      padding: 5px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(25, 27, 34, 0.9);
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .ally-pop-controls {
+      display: flex;
+      gap: 4px;
+    }
+
+    .ally-pop-btn {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .ally-pop-close { background: #f23f43; }
+    .ally-pop-min { background: #fee75c; }
+
+    .ally-pop-body {
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(8, 9, 12, 0.9);
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    .ally-pop-avatar-frame {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid currentColor;
+      flex-shrink: 0;
+      background: #000;
+    }
+
+    .ally-pop-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ally-pop-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .ally-pop-name {
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ally-pop-sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .ally-pop-status-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.62rem;
+      color: #80ab91;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .ally-pop-status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 5px currentColor;
+      animation: pulseDot 1s infinite alternate;
+    }
+
+    /* Temas por universo */
+    .ally-theme-marvel { border-color: #393b38; }
+    .ally-theme-marvel .ally-pop-header { background: #141c0f; color: #fc8181; }
+
+    .ally-theme-onepiece { border-color: rgba(214, 158, 46, 0.4); }
+    .ally-theme-onepiece .ally-pop-header { background: rgba(214, 158, 46, 0.2); color: #f6ad55; }
+
+    .ally-theme-bleach { border-color: rgba(128, 171, 145, 0.4); }
+    .ally-theme-bleach .ally-pop-header { background: rgba(128, 171, 145, 0.2); color: #80ab91; }
+
+    /* ==========================================================
+       MODAL DEL MAPA HOLOGRÁFICO 3D (INTERRUPTOR TIPO DISCORD)
+       ========================================================== */
+    .map-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 8, 5, 0.98);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      overflow: hidden;
+      border-radius: 28px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .map-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #map-canvas-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    .map-hud-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+      background: radial-gradient(circle, transparent 60%, rgba(3, 8, 5, 0.85) 100%);
+    }
+
+    .map-hud-title {
+      position: absolute;
+      top: 60px;
+      left: 18px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 11px;
+      color: #3b6b4a;
+      border-left: 3px solid #2c5939;
+      padding-left: 8px;
+    }
+
+    .map-hud-instructions {
+      position: absolute;
+      bottom: 70px;
+      left: 18px;
+      font-size: 10px;
+      color: #274730;
+      letter-spacing: 1px;
+    }
+
+    /* Tarjeta Emergente de Localización Centrada */
+    .location-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      width: min(280px, 88vw);
+      background: rgba(7, 18, 10, 0.95);
+      border: 1px solid var(--holo-green-accent);
+      box-shadow: 0 0 25px var(--holo-green-glow), 0 0 50px rgba(0,0,0,0.9), inset 0 0 10px rgba(0,0,0,0.8);
+      border-radius: 8px;
+      padding: 12px;
+      display: none;
+      backdrop-filter: blur(8px);
+      pointer-events: auto;
+    }
+
+    .location-card.active {
+      display: block;
+      animation: cardPopCenter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes cardPopCenter {
+      from { opacity: 0; transform: translate(-50%, -45%) scale(0.9); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1a3d25;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #80ab91;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .card-close {
+      background: none;
+      border: none;
+      color: #3b6b4a;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .card-close:hover {
+      color: #8ed6a3;
+    }
+
+    .card-body {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .card-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 4px;
+      border: 1px solid #23452d;
+      object-fit: cover;
+      flex-shrink: 0;
+      filter: grayscale(40%) sepia(20%) hue-rotate(85deg) contrast(110%);
+    }
+
+    .card-info {
+      flex-grow: 1;
+      font-size: 10px;
+      line-height: 1.35;
+      color: #437351;
+    }
+
+    .card-coords {
+      font-size: 9px;
+      color: #2e543a;
+      margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    .card-desc {
+      color: #6aa87f;
+      font-size: 10px;
+      word-wrap: break-word;
+    }
+
+    .card-footer {
+      margin-top: 8px;
+      padding-top: 4px;
+      border-top: 1px dashed #142e1d;
+      font-size: 8.5px;
+      color: #23422d;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Custom Scrollbar para el Museo */
+    .museum-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      position: relative;
+      z-index: 2;
+      scrollbar-width: thin;
+      scrollbar-color: #1a3d25 transparent;
+    }
+
+    .museum-scroll-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .museum-scroll-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .museum-scroll-body::-webkit-scrollbar-thumb {
+      background: #1a3d25;
+      border-radius: 4px;
+      transition: background 0.25s ease;
+    }
+
+    .museum-scroll-body::-webkit-scrollbar-thumb:hover,
+    .museum-scroll-body::-webkit-scrollbar-thumb:active {
+      background: #2c5939;
+    }
+
+    /* ==========================================================
+       ESTILOS DEL MODAL DE LOGROS (CIBERNÉTICO/MUSEO GAMA DE GRISES)
+       ========================================================== */
+    .achievements-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background-color: var(--ach-panel-bg);
+      position: relative;
+      z-index: 2;
+      scrollbar-width: thin;
+      scrollbar-color: #1a3d25 transparent;
+    }
+
+    .achievements-scroll-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .achievements-scroll-body::-webkit-scrollbar-thumb {
+      background: #1a3d25;
+      border-radius: 4px;
+    }
+
+    .ach-progress-section {
+      background-color: var(--ach-card-bg);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .ach-progress-text {
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .ach-progress-text span {
+      color: var(--text-muted);
+    }
+
+    .ach-progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background-color: var(--bg-dark);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .ach-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1f3d29, var(--green-border));
+      transition: width 0.3s ease;
+    }
+
+    .ach-featured-achievement {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background-color: var(--ach-card-bg);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      border: 1px solid var(--green-border);
+      box-shadow: 0 0 12px var(--green-glow);
+    }
+
+    .ach-featured-img-container {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .ach-featured-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      object-fit: cover;
+      box-shadow: 0 0 8px var(--green-glow);
+      border: 1px solid var(--green-border);
+    }
+
+    .ach-featured-info {
+      flex-grow: 1;
+    }
+
+    .ach-featured-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .ach-featured-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .ach-section-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      margin-top: 12px;
+    }
+
+    .ach-grid-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ach-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      cursor: pointer;
+      background-color: var(--bg-dark);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      filter: grayscale(100%) opacity(0.5);
+      transition: all 0.2s ease;
+    }
+
+    .ach-icon:hover {
+      filter: grayscale(40%) opacity(0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .ach-icon.selected {
+      filter: grayscale(0%) opacity(1);
+      border: 1px solid var(--green-border);
+      box-shadow: 0 0 10px var(--green-glow);
+    }
+
+    .ach-more-count {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background-color: var(--ach-card-bg);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .ach-footer-link {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .ach-footer-link span {
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .ach-footer-link span:hover {
+      color: var(--text-main);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================
+       PANTALLA 1: PÍLDORA FLOTANTE
+       ========================================================== -->
+  <div class="pill-wrapper" id="openProfileTrigger" title="Haz clic para ver el perfil de Arm">
+    <div class="floating-pill">
+      <div class="pill-crow-overlay"></div>
+
+      <div class="pill-avatar-box">
+        <img src="https://xatimg.com/image/S2qKZsqtJVUr.jpg" alt="Avatar" class="pill-avatar-img">
+        <div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="pill-content">
+        <div class="pill-username">
+          <span class="user-display-name">𝕯𝖔𝖔𝖒</span>
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="pill-marquee-window">
+          <div class="marquee-track">
+            <span class="pill-marquee-text user-status-text">— Sobre esta roca, edificaré mi imperio.</span>
+            <span class="pill-marquee-text user-status-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <button class="pill-bell-button" id="bellButton" title="Notificaciones">
+        <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================
+       PANTALLA 2 Y 3: MODAL PERFIL EXPANDIDO
+       ========================================================== -->
+  <div class="profile-overlay" id="profileModalOverlay">
+    <div class="profile-sheet">
+
+      <!-- ==========================================================
+           ZONA FIJA: PORTADA IMAGEN + AVATAR + ESTADO FLOTANTE
+           ========================================================== -->
+      <div class="profile-fixed-header">
+        
+        <div class="profile-banner">
+          <img src="https://xatimg.com/image/J0PJhgx0i1sY.gif" alt="Portada de perfil" class="profile-banner-img">
+          <div class="profile-banner-overlay"></div>
+          
+          <button class="close-btn" id="closeProfileTrigger" title="Cerrar perfil (Esc)">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+
+        <div class="avatar-quote-flex">
+          <div class="sheet-avatar-box">
+            <img src="https://xatimg.com/image/S2qKZsqtJVUr.jpg" alt="Avatar" class="sheet-avatar-img">
+            <div class="dnd-badge" style="width: 24px; height: 24px; bottom: 0; right: 0;">
+              <div class="dnd-bar" style="width: 11px;"></div>
+            </div>
+          </div>
+
+          <div class="sheet-status-bubble user-status-text">
+            ZZZ
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================================
+           ZONA SCROLLEABLE: A partir del Nombre
+           ========================================================== -->
+      <div class="sheet-scroll-body">
+
+        <!-- Nombre e insignias -->
+        <div class="sheet-name-block">
+          <div class="sheet-main-name">
+            <span class="user-display-name">𝕯𝖔𝖔𝖒</span>
+            <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+          </div>
+          <div class="sheet-handle-row">
+            <span class="sheet-handle">narcxssist ꞏ Freak</span>
+            <div class="sheet-badges">
+              <span class="badge-item" title="Nitro Booster">💻</span>
+              <span class="badge-item" title="Server Booster">🎁</span>
+              <span class="badge-item" title="Server Booster">🌀</span>
+              <span class="badge-item" title="HypeSquad Bravery">#</span>
+              <span class="badge-item" title="HypeSquad Bravery">♛</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs de navegación -->
+        <div class="sheet-nav-tabs">
+          <button class="nav-tab-item active" data-tab="tab-principal">Principal</button>
+          <button class="nav-tab-item" data-tab="tab-tablero">Reliquias</button>
+        </div>
+
+        <!-- CONTENIDO PESTAÑA PRINCIPAL -->
+        <div class="tab-content active" id="tab-principal">
+
+          <!-- Widget Spotify -->
+          <div class="spotify-box">
+            <div class="spotify-top-label">
+              <i data-lucide="radio" style="width: 15px; height: 15px;"></i>
+              <span>Escuchando Spotify</span>
+            </div>
+
+            <div class="spotify-media-row">
+              <img src="https://xatimg.com/image/Imf2c2xQFGUl.jpg" alt="Cover" class="spotify-album-cover">
+              
+              <div class="spotify-song-meta">
+                <div class="spotify-song-title">Aguante</div>
+                <div class="spotify-artist">Feid</div>
+              </div>
+
+              <button class="spotify-toggle-btn" id="musicPlayToggle" title="Play / Pausa">
+                <i data-lucide="play" id="musicPlayIcon" style="width: 17px; height: 17px; fill: black;"></i>
+              </button>
+            </div>
+
+            <div class="spotify-progress-container">
+              <div class="spotify-progress-bg" id="trackTimeline">
+                <div class="spotify-progress-bar" id="trackProgressFill"></div>
+              </div>
+              <div class="spotify-timestamps">
+                <span id="audioCurrent">00:00</span>
+                <span id="audioTotal">--:--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Biografía -->
+          <div class="field-caption">Biografía</div>
+          <div class="biography-quote" id="bioContent">
+            — Sobre esta roca, edificaré mi imperio.
+          </div>
+
+          <!-- Miembro desde -->
+          <div class="field-caption">Miembro desde</div>
+          <div class="member-since-box">
+            <i data-lucide="disc" style="width: 18px; height: 18px;"></i>
+            <span>9 ene 2017</span>
+          </div>
+
+          <!-- Conexiones -->
+          <div class="field-caption">Conexiones</div>
+          <div class="connections-card-box">
+            <!-- 1. Epic Games -->
+            <div class="connection-item">
+              <div class="connection-left">
+                <div class="connection-icon-box" style="background: #000">
+                  <img src="https://xatimg.com/image/3y4woB7oymy9.jpg" alt="Epic Games" class="connection-icon-img">
+                </div>
+                <div class="connection-title">
+                  <span>Vindictor</span>
+                  <span class="verified-check">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. PlayStation Network -->
+            <div class="connection-item">
+              <div class="connection-left">
+                <div class="connection-icon-box" style="background: #000;">
+                  <img src="https://xatimg.com/image/3DpKNgofdqwh.png" alt="PlayStation" class="connection-icon-img">
+                </div>
+                <div class="connection-title">
+                  <span>FeidD13</span>
+                  <span class="verified-check">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Spotify -->
+            <div class="connection-item">
+              <div class="connection-left">
+                <div class="connection-icon-box" style="background: rgba(29, 185, 84, 0.15);">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify" class="connection-icon-img">
+                </div>
+                <div class="connection-title">
+                  <span>A</span>
+                  <span class="verified-check">✓</span>
+                </div>
+              </div>
+              <i data-lucide="external-link" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+            </div>
+
+            <!-- 4. Twitch -->
+            <div class="connection-item">
+              <div class="connection-left">
+                <div class="connection-icon-box" style="background: rgba(145, 70, 255, 0.2);">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Twitch_Glitch_Logo_Purple.svg" alt="Twitch" class="connection-icon-img">
+                </div>
+                <div class="connection-title">
+                  <span>vindictvor</span>
+                  <span class="verified-check">✓</span>
+                </div>
+              </div>
+              <i data-lucide="external-link" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+            </div>
+          </div>
+
+          <!-- Sección Amigos -->
+          <div class="field-caption">Amigos</div>
+          <div class="friends-card-box">
+            <span style="font-weight: 600; font-size: 0.92rem;">Amigos</span>
+            
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="friends-interactive-stack">
+                <a href="https://xat.me/iLuguinhoo" target="_blank" rel="noopener noreferrer" class="friend-avatar-link" data-friend-name="Lugo" title="Ver perfil de Mythos">
+                  <img src="https://ofgreenvalley.github.io/Heei/assets/friend_1.jpg" alt="Lugo" class="friend-img">
+                </a>
+
+                <a href="https://xat.me/Estela" target="_blank" rel="noopener noreferrer" class="friend-avatar-link" data-friend-name="Estela" title="Ver perfil de Ren">
+                  <img src="https://ofgreenvalley.github.io/Heei/assets/friend_2.jpg" alt="Zenith" class="friend-img">
+                </a>
+
+                <a href="https://xat.me/Honeymoon" target="_blank" rel="noopener noreferrer" class="friend-avatar-link" data-friend-name="Mar" title="Ver perfil de Sinbad">
+                  <img src="https://ofgreenvalley.github.io/Heei/assets/friend_3.jpg" alt="Val" class="friend-img">
+                </a>
+
+                <a href="https://xat.me/Nyxess" target="_blank" rel="noopener noreferrer" class="friend-avatar-link" data-friend-name="Gabi" title="Ver perfil de Sinbad">
+                  <img src="https://ofgreenvalley.github.io/Heei/assets/friend_4.jpg" alt="Val" class="friend-img">
+                </a>
+              </div>
+
+              <i data-lucide="chevron-right" style="width: 17px; height: 17px;"></i>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CONTENIDO PESTAÑA TABLERO -->
+        <div class="tab-content" id="tab-tablero">
+          <div class="field-caption">Tablero Visual</div>
+          <div class="board-grid">
+            <div class="board-item">
+              <img src="https://xatimg.com/image/OKZ6bhUNgc7S.jpg" class="board-img" alt="Dark Vibe">
+              <div class="board-title-overlay"><span class="board-title">Mascara latveriana</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/BPqmsFWn0lAr.jpg" class="board-img" alt="Gaming Setup">
+              <div class="board-title-overlay"><span class="board-title">Mr Fantastico</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/ZbgRYcwuQbLj.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Cabeza de Ultron</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/n2TVQXJ6wnTi.jpg" class="board-img" alt="Dark Art">
+              <div class="board-title-overlay"><span class="board-title">Reactor Arc</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/3VDX2S1O8TLx.jpg" class="board-img" alt="Music Vibes">
+              <div class="board-title-overlay"><span class="board-title">Tempad AVT</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/NSU4F6KeAo7s.jpg" class="board-img" alt="Abstract Dark">
+              <div class="board-title-overlay"><span class="board-title">10 Anillos</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/vMfJd13ua3NH.jpg" class="board-img" alt="Forest Mist">
+              <div class="board-title-overlay"><span class="board-title">Guantelete del infinito</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/0K78bFZbqc09.jpg" class="board-img" alt="Space Void">
+              <div class="board-title-overlay"><span class="board-title">Casco de Magneto</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/pnYzqLqwfSmQ.jpg" class="board-img" alt="Neon Lines">
+              <div class="board-title-overlay"><span class="board-title">Martillo de Thor</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/VDYc1YWFVHCw.jpg" class="board-img" alt="Gothic Crown">
+              <div class="board-title-overlay"><span class="board-title">Casco de Loki</span></div>
+            </div> 
+            <div class="board-item">
+              <img src="https://xatimg.com/image/pLYyB9GRBueR.jpg" class="board-img" alt="Gothic Crown">
+              <div class="board-title-overlay"><span class="board-title">Busto de Doom</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/RYInLUxWi6Ss.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Simbionte Venom</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/1gmYeAaWMMHG.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Corazón de Loki</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/mqS9hNLkofp5.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Escudo del Capitán América</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/AeBb40WIrTAf.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Exoesqueleto Wolverine</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/RwgYW0T7KIfc.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Tierra Spiderman 616 aniquilada</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/WmSbTxGHT3Pq.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Cabeza Ghost Ridern</span></div>
+            </div>
+             <div class="board-item">
+              <img src="https://xatimg.com/image/KAc1llQynHU7.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Cadenas del infierno</span></div>
+            </div>
+             <div class="board-item">
+              <img src="https://xatimg.com/image/7ur6z9O1vWp1.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Capa de Dr. Strange</span></div>
+            </div>
+             <div class="board-item">
+              <img src="https://xatimg.com/image/DIExNRay8FjQ.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Darkhold</span></div>
+            </div>
+             <div class="board-item">
+              <img src="https://xatimg.com/image/u3jBgSO0J0EJ.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Ben Grimm "The Thing"</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/BVWXxm9N3t9C.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Necroespada</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/NjVs1jd49ZGv.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Tribunal viviente</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/miA47GORJGHR.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Visor de Cyclops</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/s2Mz996A8s8D.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Alas de Arcangel</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/yd3vVUI2aRHg.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">En Sabah Nur "Apocalipsis"</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/1DIG2HCE9ryN.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Plataforma temporal Kang the Conquerer</span></div>
+            </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/8tS9IMUjYESt.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Tabla de Silver Surfer</span></div>
+            </div>
+             <div class="board-item">
+              <img src="https://xatimg.com/image/0JySuWSjZQQX.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Libro de Vishanti</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- Fin .sheet-scroll-body -->
+
+      <!-- ==========================================================
+           OVERLAY PESTAÑA ALIADOS (ENTORNO MATRIX CIBERNÉTICO INTERNO)
+           ========================================================== -->
+      <div class="allies-overlay" id="alliesModalOverlay">
+        <div class="allies-scanline"></div>
+        <div id="allies-bg-code-inner"></div>
+
+        <div class="allies-header-bar">
+          <div class="allies-header-title">
+            <i data-lucide="swords" style="width: 18px; height: 18px;"></i>
+            <span>Red de Aliados</span>
+          </div>
+          <button class="allies-header-close" id="closeAlliesTrigger" title="Volver al perfil">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <div id="allies-desktop-viewport"></div>
+      </div>
+
+      <!-- ==========================================================
+           OVERLAY MAPA HOLOGRÁFICO 3D MULTIVERSAL
+           ========================================================== -->
+      <div class="map-overlay" id="mapModalOverlay">
+        <div class="allies-header-bar">
+          <div class="allies-header-title">
+            <i data-lucide="map" style="width: 18px; height: 18px;"></i>
+            <span>Universos</span>
+          </div>
+          <button class="allies-header-close" id="closeMapTrigger" title="Volver al perfil">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <div id="map-canvas-container"></div>
+
+        <div class="map-hud-overlay">
+          <div class="map-hud-title">SISTEMA MULTIVERSAL v5.0.0<br><span style="font-size: 8.5px; color: #1e3d27;">NEXO ORBITAL // VERDE DESATURADO</span></div>
+          <div class="map-hud-instructions">ROTAR NEXO: Tocar y Arrastrar | UNIVERSOS: Tocar para inspeccionar</div>
+        </div>
+
+        <!-- Tarjeta Flotante HUD Mapa Centrada -->
+        <div id="locationCard" class="location-card">
+          <div class="card-header">
+            <span id="cardTitle" class="card-title">UNIVERSO #01</span>
+            <button class="card-close" onclick="closeCard()">✕</button>
+          </div>
+          <div class="card-body">
+            <img id="cardImage" class="card-thumb" src="" alt="Thumbnail">
+            <div class="card-info">
+              <div id="cardCoords" class="card-coords">LÍNEA: -- | CÓDIGO: --</div>
+              <div id="cardDesc" class="card-desc">Cargando datos del universo...</div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <span>REGISTRO: MULTIVERSE</span>
+            <span id="cardStatus">ESTADO: ONLINE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================================
+           OVERLAY MUSEO (VENTANA FLOTANTE ESTILO DISCORD/ALIADOS)
+           ========================================================== -->
+      <div class="allies-overlay" id="museumModalOverlay">
+        <div class="allies-header-bar">
+          <div class="allies-header-title">
+            <i data-lucide="landmark" style="width: 18px; height: 18px;"></i>
+            <span>Museo</span>
+          </div>
+          <button class="allies-header-close" id="closeMuseumTrigger" title="Volver al perfil">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <div class="museum-scroll-body">
+          <div class="field-caption">Tablero Visual del Museo</div>
+          <div class="board-grid" id="museumBoardContainer">
+            <!-- Contenido de Reliquias inyectado dinámicamente -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================================
+           OVERLAY LOGROS (VENTANA INTERMITENTE ESTILO DISCORD/MUSEO)
+           ========================================================== -->
+      <div class="allies-overlay" id="achievementsModalOverlay">
+        <div class="allies-header-bar">
+          <div class="allies-header-title">
+            <i data-lucide="crown" style="width: 18px; height: 18px;"></i>
+            <span id="ach-header-title">LOGROS</span>
+          </div>
+          <button class="allies-header-close" id="closeAchievementsTrigger" title="Volver al perfil">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <div class="achievements-scroll-body">
+          <!-- Barra de Progreso -->
+          <div class="ach-progress-section">
+            <div class="ach-progress-text">
+              Has desbloqueado <strong id="ach-unlocked-count">0</strong>/<span id="ach-total-count">0</span> 
+              (<span id="ach-percentage-text">0%</span>)
+            </div>
+            <div class="ach-progress-bar-bg">
+              <div class="ach-progress-bar-fill" id="ach-progress-bar"></div>
+            </div>
+          </div>
+
+          <!-- Panel del Logro Seleccionado Arriba -->
+          <div class="ach-featured-achievement">
+            <div class="ach-featured-img-container">
+              <img id="ach-featured-img" class="ach-featured-img" src="" alt="Logro Seleccionado">
+            </div>
+            <div class="ach-featured-info">
+              <div class="ach-featured-title" id="ach-featured-title"></div>
+              <div class="ach-featured-desc" id="ach-featured-desc"></div>
+            </div>
+          </div>
+
+          <!-- Cuadrícula: Desbloqueados -->
+          <div class="ach-grid-container" id="ach-unlocked-grid"></div>
+
+          <div class="ach-section-label" id="ach-locked-label">Logros bloqueados</div>
+          
+          <!-- Cuadrícula: Bloqueados -->
+          <div class="ach-grid-container" id="ach-locked-grid"></div>
+
+          <div class="ach-footer-link">
+            <span id="ach-footer-text"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE NAVEGACIÓN FLOTANTE ABAJO -->
+      <div class="bottom-nav-container">
+        <div class="custom-nav-bar">
+          <div class="nav-bar-item" id="openAlliesTrigger">
+            <i data-lucide="swords"></i>
+            <span>Aliados</span>
+          </div>
+          <div class="nav-bar-item" id="openMuseumTrigger">
+            <i data-lucide="landmark"></i>
+            <span>Museo</span>
+          </div>
+          <div class="nav-bar-item" id="openMapTrigger">
+            <i data-lucide="map"></i>
+            <span>Mapa</span>
+          </div>
+          <div class="nav-bar-item" id="openAchievementsTrigger">
+            <i data-lucide="crown"></i>
+            <span>Logros</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Audio elemento DropBox -->
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <!-- Toast flotante -->
+  <div class="toast-popup" id="toastBox">Notificación</div>
+
+  <script>
+    lucide.createIcons();
+
+    // ENLACE DIRECTO DE DROPBOX
+    const DROPBOX_AUDIO_URL = "https://www.dropbox.com/scl/fi/jajrl92h2yw3a07g0hlgi/Feid-Aguante-Lyric-Video.mp3?rlkey=1qylav9rv2cipeo5pbl8em0ip&st=i2zmij52&dl=0";
+
+    function formatDropboxDirectUrl(url) {
+      if (!url) return "";
+      return url.replace("&dl=0", "&raw=1").replace("?dl=0", "?raw=1");
+    }
+
+    const audioPlayer = document.getElementById('audioPlayer');
+    audioPlayer.src = formatDropboxDirectUrl(DROPBOX_AUDIO_URL);
+
+    // Referencias del DOM
+    const openTrigger = document.getElementById('openProfileTrigger');
+    const closeTrigger = document.getElementById('closeProfileTrigger');
+    const modalOverlay = document.getElementById('profileModalOverlay');
+    const bellBtn = document.getElementById('bellButton');
+    const toast = document.getElementById('toastBox');
+
+    // Controles de Audio Spotify
+    const playToggle = document.getElementById('musicPlayToggle');
+    const playIcon = document.getElementById('musicPlayIcon');
+    const progressFill = document.getElementById('trackProgressFill');
+    const timeline = document.getElementById('trackTimeline');
+    const timeDisplay = document.getElementById('audioCurrent');
+    const totalDisplay = document.getElementById('audioTotal');
+
+    let toastTimeout;
+    function showToast(msg) {
+      clearTimeout(toastTimeout);
+      toast.textContent = msg;
+      toast.classList.add('visible');
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 2500);
+    }
+
+    function playAudioTrack() {
+      const playPromise = audioPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          showToast('Reproduciendo: FEID - Aguante');
+        }).catch(err => {
+          console.warn('Autoplay prevenido:', err);
+        });
+      }
+    }
+
+    function pauseAudioTrack() {
+      if (!audioPlayer.paused) {
+        audioPlayer.pause();
+      }
+    }
+
+    openTrigger.addEventListener('click', () => {
+      modalOverlay.classList.add('active');
+      playAudioTrack();
+    });
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      pauseAudioTrack();
+    }
+
+    closeTrigger.addEventListener('click', closeModal);
+
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    bellBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showToast('No tienes notificaciones pendientes');
+    });
+
+    function formatTime(sec) {
+      if (isNaN(sec) || !isFinite(sec)) return "00:00";
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(Math.floor(sec % 60)).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    playToggle.addEventListener('click', () => {
+      if (audioPlayer.paused) {
+        playAudioTrack();
+      } else {
+        pauseAudioTrack();
+        showToast('Spotify en pausa');
+      }
+    });
+
+    audioPlayer.addEventListener('play', () => {
+      playIcon.setAttribute('data-lucide', 'pause');
+      lucide.createIcons();
+    });
+
+    audioPlayer.addEventListener('pause', () => {
+      playIcon.setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+    });
+
+    audioPlayer.addEventListener('loadedmetadata', () => {
+      totalDisplay.textContent = formatTime(audioPlayer.duration);
+    });
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (!audioPlayer.duration) return;
+      const current = audioPlayer.currentTime;
+      const total = audioPlayer.duration;
+      timeDisplay.textContent = formatTime(current);
+      const pct = (current / total) * 100;
+      progressFill.style.width = pct + '%';
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+      progressFill.style.width = '0%';
+      timeDisplay.textContent = "00:00";
+      playIcon.setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+    });
+
+    timeline.addEventListener('click', (e) => {
+      if (!audioPlayer.duration) return;
+      const rect = timeline.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+      audioPlayer.currentTime = ratio * audioPlayer.duration;
+    });
+
+    // SISTEMA DE NAVEGACIÓN DE PESTAÑAS (TABS)
+    document.querySelectorAll('.nav-tab-item').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.nav-tab-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        this.classList.add('active');
+        const targetTab = this.getAttribute('data-tab');
+        if (targetTab && document.getElementById(targetTab)) {
+          document.getElementById(targetTab).classList.add('active');
+        }
+      });
+    });
+
+    /* ==========================================================
+       DATOS Y LÓGICA DE VENTANAS CIBERNÉTICAS FLOTANTES (ALIADOS)
+       ========================================================== */
+    const ALLIES_MATRIX_DATA = [
+      { name: "Killua", universe: "HXH", sub: "STARK_HUD", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/15.jpg" },
+      { name: "Chrollo", universe: "HxH", sub: "STRAW_HAT_DB", theme: "ally-theme-onepiece", img: "https://xatimg.com/image/zg8qC0OXZJzY.jpg" },
+      { name: "Claude", universe: "MB", sub: "REIATSU_SYNC", theme: "ally-theme-bleach", img: "https://u.cubeupload.com/Eradicater/09.jpg" },
+      { name: "Granger", universe: "MB", sub: "WEB_SENSORS", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/08.jpg" },
+      { name: "Zoro", universe: "OP", sub: "SANTORYU_SYS", theme: "ally-theme-onepiece", img: "https://u.cubeupload.com/Eradicater/22.jpg" },
+      { name: "Law", universe: "OP", sub: "HOGYOKU_NET", theme: "ally-theme-bleach", img: "https://u.cubeupload.com/Eradicater/23.jpg" },
+      { name: "Eren", universe: "SNK", sub: "SANCTUM_NODE", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/f8114.jpg" },
+      { name: "Levi", universe: "SNK", sub: "RED_HAIR_FLEET", theme: "ally-theme-onepiece", img: "https://u.cubeupload.com/Eradicater/04.jpg" },
+      { name: "Urahara", universe: "Bleach", sub: "RESEARCH_DEPT", theme: "ally-theme-bleach", img: "https://u.cubeupload.com/Eradicater/11.jpg" },
+      { name: "Aizen", universe: "Bleach", sub: "WEAPON_X_LOG", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/01.jpg" },
+      { name: "Madara", universe: "Naruto", sub: "WEAPON_X_LOG", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/18.jpg" },
+      { name: "Itachi", universe: "Naruto", sub: "WEAPON_X_LOG", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/17.jpg" },
+      { name: "Geto", universe: "JJK", sub: "WEAPON_X_LOG", theme: "ally-theme-marvel", img: "https://xatimg.com/image/2z5AlS6nU5XS.png" },
+      { name: "Gojo", universe: "JJK", sub: "WEAPON_X_LOG", theme: "ally-theme-marvel", img: "https://u.cubeupload.com/Eradicater/02.jpg" }
+    ];
+
+    const alliesOverlay = document.getElementById('alliesModalOverlay');
+    const openAlliesBtn = document.getElementById('openAlliesTrigger');
+    const closeAlliesBtn = document.getElementById('closeAlliesTrigger');
+    const alliesViewport = document.getElementById('allies-desktop-viewport');
+
+    let alliesIntervals = [];
+    let alliesPopCounter = 0;
+
+    function initInnerBackgroundCode() {
+      const container = document.getElementById('allies-bg-code-inner');
+      if (container.children.length > 0) return;
+      
+      const lines = [
+        "function syncAllyNode(id) { return fetch('/doom/' + id); }",
+        "REIATSU_STREAM = 0x777AF; STATE = 'ONLINE';",
+        "001101101011 DOOM_BOT_01 10460 10:37",
+        "MARVEL // ONE_PIECE // BLEACH CONNECTED",
+        "import { ArcReactor, Hogyoku } from 'multiverse';",
+        "while(true) { console.log(Math.random().toString(16)); }"
+      ];
+
+      for (let i = 0; i < 4; i++) {
+        const col = document.createElement('div');
+        col.style.animation = 'continuousScroll 18s linear infinite';
+        let text = '';
+        for (let j = 0; j < 40; j++) {
+          text += lines[Math.floor(Math.random() * lines.length)] + '\n';
+        }
+        col.innerText = text;
+        container.appendChild(col);
+      }
+    }
+
+    function spawnAllyPopWindow(index) {
+      const data = ALLIES_MATRIX_DATA[index];
+      if (!data) return;
+
+      alliesPopCounter++;
+      const winId = `pop-win-${alliesPopCounter}`;
+
+      const rect = alliesViewport.getBoundingClientRect();
+      const maxX = Math.max(10, rect.width - 230);
+      const maxY = Math.max(10, rect.height - 90);
+      const posX = Math.floor(Math.random() * maxX);
+      const posY = Math.floor(Math.random() * maxY);
+
+      const win = document.createElement('div');
+      win.id = winId;
+      win.className = `ally-pop-window ${data.theme}`;
+      win.style.left = `${posX}px`;
+      win.style.top = `${posY}px`;
+
+      win.innerHTML = `
+        <div class="ally-pop-header" onmousedown="dragAllyPopWindow(event, '${winId}')">
+          <span>💻 ${data.universe}</span>
+          <div class="ally-pop-controls">
+            <span class="ally-pop-btn ally-pop-min" onclick="minAllyPopWindow('${winId}')"></span>
+            <span class="ally-pop-btn ally-pop-close" onclick="closeAllyPopWindow('${winId}')"></span>
+          </div>
+        </div>
+        <div class="ally-pop-body">
+          <div class="ally-pop-avatar-frame">
+            <img src="${data.img}" alt="${data.name}" class="ally-pop-avatar-img">
+          </div>
+          <div class="ally-pop-info">
+            <div class="ally-pop-name">${data.name}</div>
+            <div class="ally-pop-sub">${data.sub}</div>
+            <div class="ally-pop-status-bar">
+              <div class="ally-pop-status-dot"></div>
+              <span id="data-val-${winId}">0x${Math.random().toString(16).substring(2,6).toUpperCase()}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      alliesViewport.appendChild(win);
+
+      const interval = setInterval(() => {
+        const valEl = document.getElementById(`data-val-${winId}`);
+        if (valEl) {
+          valEl.innerText = `0x${Math.random().toString(16).substring(2,6).toUpperCase()}`;
+        } else {
+          clearInterval(interval);
+        }
+      }, 1400 + Math.random() * 800);
+
+      alliesIntervals.push(interval);
+    }
+
+    function renderAlliesSequence() {
+      alliesViewport.innerHTML = '';
+      alliesIntervals.forEach(clearInterval);
+      alliesIntervals = [];
+
+      ALLIES_MATRIX_DATA.forEach((_, idx) => {
+        setTimeout(() => {
+          if (alliesOverlay.classList.contains('active')) {
+            spawnAllyPopWindow(idx);
+          }
+        }, idx * 250);
+      });
+    }
+
+    function dragAllyPopWindow(e, winId) {
+      const win = document.getElementById(winId);
+      const bounds = alliesViewport.getBoundingClientRect();
+      let shiftX = e.clientX - win.getBoundingClientRect().left;
+      let shiftY = e.clientY - win.getBoundingClientRect().top;
+
+      document.querySelectorAll('.ally-pop-window').forEach(w => w.style.zIndex = 10);
+      win.style.zIndex = 100;
+
+      function moveAt(pageX, pageY) {
+        let newX = pageX - bounds.left - shiftX;
+        let newY = pageY - bounds.top - shiftY;
+
+        newX = Math.max(0, Math.min(newX, bounds.width - win.offsetWidth));
+        newY = Math.max(0, Math.min(newY, bounds.height - win.offsetHeight));
+
+        win.style.left = newX + 'px';
+        win.style.top = newY + 'px';
+      }
+
+      function onMouseMove(event) {
+        moveAt(event.clientX, event.clientY);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+
+      document.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.onmouseup = null;
+      };
+    }
+
+    function closeAllyPopWindow(winId) {
+      const win = document.getElementById(winId);
+      if (win) win.remove();
+    }
+
+    function minAllyPopWindow(winId) {
+      const win = document.getElementById(winId);
+      if (win) {
+        const body = win.querySelector('.ally-pop-body');
+        body.style.display = body.style.display === 'none' ? 'flex' : 'none';
+      }
+    }
+
+    openAlliesBtn.addEventListener('click', () => {
+      alliesOverlay.classList.add('active');
+      initInnerBackgroundCode();
+      renderAlliesSequence();
+    });
+
+    closeAlliesBtn.addEventListener('click', () => {
+      alliesOverlay.classList.remove('active');
+      alliesIntervals.forEach(clearInterval);
+      alliesIntervals = [];
+    });
+
+    /* ==========================================================
+       DATOS Y CÓDIGO DEL MAPA HOLOGRÁFICO 3D MULTIVERSAL EN TIEMPO REAL
+       ========================================================== */
+    const universesData = [
+      { id: 1, isCenter: true, name: "TIERRA-616 (NÚCLEO)", line: "LÍNEA PRIMARIA", code: "UNIV-01-MAIN", desc: "Dimensión central del Multiverso y sede principal de las fuerzas de Latveria.", img: "https://picsum.photos/seed/univ1/150/150", orbitRadius: 0, speed: 0 },
+      { id: 2, isCenter: false, name: "TIERRA-1610 (ULTIMATE)", line: "RAMA SECUNDARIA", code: "UNIV-1610-ULT", desc: "Realidad con tecnología de plasma avanzada y bio-armaduras.", img: "https://picsum.photos/seed/univ2/150/150", orbitRadius: 4.8, speed: 0.008, tilt: 0.2 },
+      { id: 3, isCenter: false, name: "UNIVERSO ZOMBIE", line: "LÍNEA INFECTADA", code: "UNIV-2149-ZMB", desc: "Dimensión bajo cuarentena permanente debido a un brote viral contagioso.", img: "https://picsum.photos/seed/univ3/150/150", orbitRadius: 6.2, speed: -0.006, tilt: -0.4 },
+      { id: 4, name: "DIMENSIÓN OSCURA", line: "PLANO MÁGICO", code: "DIM-DARK-VOID", desc: "Reino de energía mística comprimida gobernado por entidades arcanas.", img: "https://picsum.photos/seed/univ4/150/150", orbitRadius: 7.5, speed: 0.005, tilt: 0.6 },
+      { id: 5, name: "TIERRA-838 (ILLUMINATI)", line: "CONSEJO MULTIVERSAL", code: "UNIV-838-ILL", desc: "Mundo pacificado y supervisado por Ultron Bots integrados.", img: "https://picsum.photos/seed/univ5/150/150", orbitRadius: 8.8, speed: -0.004, tilt: -0.1 },
+      { id: 6, name: "REINO CUÁNTICO", line: "NIVEL SUBATÓMICO", code: "MICRO-Q-NET", desc: "Plano donde el espacio y el tiempo colapsan en frecuencias cuánticas.", img: "https://picsum.photos/seed/univ6/150/150", orbitRadius: 10.0, speed: 0.007, tilt: 0.8 },
+      { id: 7, name: "TIERRA 2099", line: "FUTURO CIBERNÉTICO", code: "UNIV-928-FUT", desc: "Metrópolis futurista dominada por megacorporaciones y redes de luz.", img: "https://picsum.photos/seed/univ7/150/150", orbitRadius: 11.2, speed: -0.005, tilt: -0.5 },
+      { id: 8, name: "MUNDO DE BATALLA", line: "FRAGANZA TEMPORAL", code: "BATTLE-REALM", desc: "Mundo de fragmentos cósmicos unificados por la voluntad de Doom.", img: "https://picsum.photos/seed/univ8/150/150", orbitRadius: 12.5, speed: 0.003, tilt: 0.3 },
+      { id: 9, name: "UNIVERSO MOEBIUS", line: "BOCLE TEMPORAL", code: "TIME-LOOP-999", desc: "Bucle cronológico infinito donde los eventos suceden en ciclo continuo.", img: "https://picsum.photos/seed/univ9/150/150", orbitRadius: 13.8, speed: -0.006, tilt: -0.7 },
+      { id: 10, name: "TIERRA-X", line: "EVOLUCIÓN MUTANTE", code: "UNIV-9997-MUT", desc: "Realidad donde toda la población mundial ha desarrollado capacidades sobrehumanas.", img: "https://picsum.photos/seed/univ10/150/150", orbitRadius: 15.0, speed: 0.004, tilt: 0.4 }
+    ];
+
+    const mapOverlay = document.getElementById('mapModalOverlay');
+    const openMapBtn = document.getElementById('openMapTrigger');
+    const closeMapBtn = document.getElementById('closeMapTrigger');
+
+    let mapScene, mapCamera, mapRenderer, mapControls;
+    let nexoGroup, orbitsGroup;
+    let raycaster = new THREE.Raycaster();
+    let mouse = new THREE.Vector2();
+    let universeMeshes = [];
+    let isMapInitialized = false;
+
+    function createSphereTexture(colorHex, wireframe = true) {
+      const geo = new THREE.IcosahedronGeometry(1, 2);
+      const mat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        wireframe: wireframe,
+        transparent: true,
+        opacity: 0.7
+      });
+      return new THREE.Mesh(geo, mat);
+    }
+
+    function initHoloMap() {
+      if (isMapInitialized) return;
+      const container = document.getElementById('map-canvas-container');
+
+      mapScene = new THREE.Scene();
+      mapScene.fog = new THREE.FogExp2(0x030805, 0.025);
+
+      mapCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      mapCamera.position.set(0, 12, 32);
+
+      mapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      mapRenderer.setSize(container.clientWidth, container.clientHeight);
+      mapRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(mapRenderer.domElement);
+
+      mapControls = new THREE.OrbitControls(mapCamera, mapRenderer.domElement);
+      mapControls.enableDamping = true;
+      mapControls.dampingFactor = 0.05;
+      mapControls.rotateSpeed = 0.8;
+      mapControls.minDistance = 12;
+      mapControls.maxDistance = 60;
+
+      nexoGroup = new THREE.Group();
+      mapScene.add(nexoGroup);
+
+      orbitsGroup = new THREE.Group();
+      nexoGroup.add(orbitsGroup);
+
+      // Partículas Multiversales de fondo
+      const dustGeo = new THREE.BufferGeometry();
+      const count = 1200;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 80;
+        positions[i + 1] = (Math.random() - 0.5) * 80;
+        positions[i + 2] = (Math.random() - 0.5) * 80;
+      }
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      nexoGroup.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0x3d704d, size: 0.1, transparent: true, opacity: 0.4 })));
+
+      universeMeshes = [];
+
+      universesData.forEach((univ, index) => {
+        const univGroup = new THREE.Group();
+
+        if (univ.isCenter) {
+          // NÚCLEO CENTRAL TIERRA-616
+          const coreMesh = createSphereTexture(0x80ab91, true);
+          coreMesh.scale.set(2.4, 2.4, 2.4);
+
+          const innerGlow = createSphereTexture(0x2c5939, false);
+          innerGlow.scale.set(2.2, 2.2, 2.2);
+
+          const ringGeo = new THREE.RingGeometry(2.8, 3.2, 32);
+          const ringMat = new THREE.MeshBasicMaterial({ color: 0x4e8a60, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+          const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+          ringMesh.rotation.x = Math.PI / 2;
+
+          univGroup.add(coreMesh);
+          univGroup.add(innerGlow);
+          univGroup.add(ringMesh);
+
+          coreMesh.userData = { data: univ, ringMesh: ringMesh };
+          universeMeshes.push(coreMesh);
+          nexoGroup.add(univGroup);
+        } else {
+          // UNIVERSOS ORBITALES
+          const size = 0.6 + Math.random() * 0.4;
+          const uMesh = createSphereTexture(0x80ab91, true);
+          uMesh.scale.set(size, size, size);
+
+          const innerMesh = createSphereTexture(0x183b23, false);
+          innerMesh.scale.set(size * 0.85, size * 0.85, size * 0.85);
+
+          const haloGeo = new THREE.RingGeometry(size * 1.2, size * 1.5, 16);
+          const haloMat = new THREE.MeshBasicMaterial({ color: 0x3e754f, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
+          const haloMesh = new THREE.Mesh(haloGeo, haloMat);
+          haloMesh.rotation.x = Math.PI / 2;
+
+          univGroup.add(uMesh);
+          univGroup.add(innerMesh);
+          univGroup.add(haloMesh);
+
+          // Anillo de trayectoria orbital
+          const pathSegments = 64;
+          const pathGeo = new THREE.BufferGeometry();
+          const pathPos = new Float32Array(pathSegments * 3);
+          for (let j = 0; j < pathSegments; j++) {
+            const theta = (j / pathSegments) * Math.PI * 2;
+            pathPos[j * 3] = Math.cos(theta) * univ.orbitRadius;
+            pathPos[j * 3 + 1] = 0;
+            pathPos[j * 3 + 2] = Math.sin(theta) * univ.orbitRadius;
+          }
+          pathGeo.setAttribute('position', new THREE.BufferAttribute(pathPos, 3));
+          const pathLine = new THREE.LineLoop(pathGeo, new THREE.LineBasicMaterial({ color: 0x1d3d27, transparent: true, opacity: 0.25 }));
+          pathLine.rotation.z = univ.tilt || 0;
+          orbitsGroup.add(pathLine);
+
+          uMesh.userData = {
+            data: univ,
+            ringMesh: haloMesh,
+            parentGroup: univGroup,
+            angle: (index / 9) * Math.PI * 2,
+            orbitRadius: univ.orbitRadius,
+            speed: univ.speed,
+            tilt: univ.tilt || 0
+          };
+
+          universeMeshes.push(uMesh);
+          nexoGroup.add(univGroup);
+        }
+      });
+
+      // Eventos del Mapa
+      mapRenderer.domElement.addEventListener('pointermove', onMapPointerMove);
+      mapRenderer.domElement.addEventListener('pointerup', onMapPointerUp);
+      mapRenderer.domElement.addEventListener('touchstart', onMapTouchStart, { passive: true });
+      mapRenderer.domElement.addEventListener('touchend', onMapTouchEnd, { passive: true });
+
+      isMapInitialized = true;
+      animateHoloMap();
+    }
+
+    let mapPointerDownPos = { x: 0, y: 0 };
+    let touchStartPos = { x: 0, y: 0 };
+
+    mapOverlay.addEventListener('pointerdown', (e) => {
+      mapPointerDownPos = { x: e.clientX, y: e.clientY };
+    });
+
+    function onMapTouchStart(e) {
+      if (e.touches.length === 1) {
+        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    }
+
+    function checkAndSelectIntersect(clientX, clientY) {
+      const rect = mapRenderer.domElement.getBoundingClientRect();
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, mapCamera);
+      const intersects = raycaster.intersectObjects(universeMeshes);
+      if (intersects.length > 0) {
+        selectLocation(intersects[0].object);
+      }
+    }
+
+    function onMapTouchEnd(e) {
+      if (e.changedTouches.length === 1) {
+        const touch = e.changedTouches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartPos.x);
+        const deltaY = Math.abs(touch.clientY - touchStartPos.y);
+        
+        if (deltaX < 8 && deltaY < 8) {
+          checkAndSelectIntersect(touch.clientX, touch.clientY);
+        }
+      }
+    }
+
+    function onMapPointerMove(event) {
+      const rect = mapRenderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, mapCamera);
+      const intersects = raycaster.intersectObjects(universeMeshes);
+      document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
+    }
+
+    function onMapPointerUp(event) {
+      if (event.pointerType === 'touch') return;
+      const deltaX = Math.abs(event.clientX - mapPointerDownPos.x);
+      const deltaY = Math.abs(event.clientY - mapPointerDownPos.y);
+      if (deltaX > 5 || deltaY > 5) return;
+
+      checkAndSelectIntersect(event.clientX, event.clientY);
+    }
+
+    function selectLocation(meshObj) {
+      const data = meshObj.userData.data;
+
+      document.getElementById('cardTitle').innerText = data.name;
+      document.getElementById('cardCoords').innerText = `LÍNEA: ${data.line} | CÓDIGO: ${data.code}`;
+      document.getElementById('cardDesc').innerText = data.desc;
+      document.getElementById('cardImage').src = data.img;
+
+      document.getElementById('locationCard').classList.add('active');
+    }
+
+    function closeCard() {
+      document.getElementById('locationCard').classList.remove('active');
+    }
+
+    function animateHoloMap(time) {
+      if (!mapOverlay.classList.contains('active')) return;
+      requestAnimationFrame(animateHoloMap);
+
+      // Rotación suave general del Nexo
+      nexoGroup.rotation.y += 0.001;
+
+      // Movimiento orbital de universos
+      universeMeshes.forEach((mesh, idx) => {
+        const ud = mesh.userData;
+        if (!ud.data.isCenter) {
+          ud.angle += ud.speed;
+          const x = Math.cos(ud.angle) * ud.orbitRadius;
+          const z = Math.sin(ud.angle) * ud.orbitRadius;
+          const y = Math.sin(ud.angle * 2) * (ud.tilt * 2);
+
+          if (ud.parentGroup) {
+            ud.parentGroup.position.set(x, y, z);
+            ud.parentGroup.rotation.y += 0.01;
+          }
+        } else {
+          mesh.rotation.y += 0.005;
+        }
+
+        if (ud.ringMesh) {
+          const scale = 1 + Math.sin(time * 0.004 + idx) * 0.15;
+          ud.ringMesh.scale.set(scale, scale, scale);
+        }
+      });
+
+      mapControls.update();
+      mapRenderer.render(mapScene, mapCamera);
+    }
+
+    openMapBtn.addEventListener('click', () => {
+      mapOverlay.classList.add('active');
+      setTimeout(() => {
+        initHoloMap();
+        if (mapRenderer) {
+          const container = document.getElementById('map-canvas-container');
+          mapCamera.aspect = container.clientWidth / container.clientHeight;
+          mapCamera.updateProjectionMatrix();
+          mapRenderer.setSize(container.clientWidth, container.clientHeight);
+          requestAnimationFrame(animateHoloMap);
+        }
+      }, 50);
+    });
+
+    closeMapBtn.addEventListener('click', () => {
+      mapOverlay.classList.remove('active');
+      closeCard();
+    });
+
+    /* ==========================================================
+       LÓGICA APERTURA Y CLONACIÓN DEL MUSEO
+       ========================================================== */
+    const museumOverlay = document.getElementById('museumModalOverlay');
+    const openMuseumBtn = document.getElementById('openMuseumTrigger');
+    const closeMuseumBtn = document.getElementById('closeMuseumTrigger');
+    const museumBoardContainer = document.getElementById('museumBoardContainer');
+
+    openMuseumBtn.addEventListener('click', () => {
+      const reliquiasContent = document.querySelector('#tab-tablero .board-grid').innerHTML;
+      museumBoardContainer.innerHTML = reliquiasContent;
+
+      lucide.createIcons();
+      museumOverlay.classList.add('active');
+    });
+
+    closeMuseumBtn.addEventListener('click', () => {
+      museumOverlay.classList.remove('active');
+    });
+
+    /* ==========================================================
+       LÓGICA Y DATOS DE LOGROS (MODAL CIBERNÉTICO/MUSEO)
+       ========================================================== */
+    const ACH_CONFIG = {
+      headerTitle: "Logros",
+      footerText: "",
+      extraUnlockedCount: "",
+      extraLockedCount: "",
+      selectedId: 1
+    };
+
+    const achievements = [
+      // LOGROS DESBLOQUEADOS (unlocked: true)
+      { id: 1, title: "Robar el poder de los Beyonders", desc: "Absorber la energía de entidades cósmicas superiores para obtener omnipotencia absoluta sobre la realidad.", img: "https://picsum.photos/id/1062/200/200", unlocked: true },
+      { id: 2, title: "Crear el Battleworld", desc: "Fusionar los fragmentos de universos destruidos en un único planeta y autoproclamarse su Dios emperador.", img: "https://xatimg.com/image/OcjIsVRevG7B.png", unlocked: true },
+      { id: 3, title: "Conquistar Latveria", desc: "Derrocar al monarca actual de tu país natal, tomar el trono y asegurar inmunidad diplomática internacional.", img: "https://xatimg.com/image/B3HYBIwU6GI6.jpg", unlocked: true },
+      { id: 4, title: "Resistir el Guantelete del Infinito", desc: "Soportar un ataque directo a máxima potencia de un rival que posea las Gemas del Infinito.", img: "https://xatimg.com/image/e1fOV8mpDmk2.jpg", unlocked: true },
+      { id: 5, title: "Enfrentarse a cuatro Celestiales", desc: "Desarrollar escudos térmicos y tecnología avanzada capaces de resistir el asalto simultáneo de cuatro dioses cósmicos.", img: "https://picsum.photos/id/1069/200/200", unlocked: true },
+      { id: 6, title: "Emperador del Mundo a través del control mental", desc: "Manipular a los líderes globales mediante tecnología de control mental para ser nombrado soberano legal de la Tierra.", img: "https://picsum.photos/id/1040/200/200", unlocked: true },
+      { id: 7, title: "Dominio dual de ciencia y hechicería", desc: "Estudiar hasta dominar por igual la ciencia de vanguardia y las artes místicas de alto nivel.", img: "https://picsum.photos/id/1067/200/200", unlocked: true },
+
+      // LOGROS BLOQUEADOS (unlocked: false)
+      { id: 8, title: "Rescatar un alma del infierno", desc: "Viajar a la dimensión mística de Mefisto y vencerlo en su propio terreno para liberar un alma cautiva.", img: "https://picsum.photos/id/1074/200/200", unlocked: false },
+      { id: 9, title: "Construir la Máquina del Tiempo", desc: "Desarrollar la tecnología científica necesaria para viajar a través del continuo espacio-tiempo y alterar eventos históricos a tu favor.", img: "https://picsum.photos/id/1015/200/200", unlocked: false },
+      { id: 10, title: "Robar la Fuerza Fénix", desc: "Diseñar un dispositivo de contención avanzado capaz de drenar y almacenar el poder cósmico de la entidad Fénix.", img: "https://picsum.photos/id/1020/200/200", unlocked: false },
+      { id: 11, title: "Curar a la Mole", desc: "Utilizar tu intelecto científico superior para revertir mutaciones genéticas extremas y lograr lo que tus mayores rivales consideraban imposible.", img: "https://picsum.photos/id/1059/200/200", unlocked: false },
+      { id: 12, title: "Soportar la Purga de las Incursiones", desc: "Sobrevivir a la colisión directa entre realidades alternativas construyendo una balsa salvavidas interdimensional hiperavanzada.", img: "https://picsum.photos/id/1068/200/200", unlocked: false },
+      { id: 13, title: "Asesinar a un titán cósmico con tus manos", desc: "Canalizar tu máximo potencial energético para destruir físicamente a un enemigo de escala cósmica.", img: "https://picsum.photos/id/1005/200/200", unlocked: false },
+      { id: 14, title: "Convertirse en el Infame Iron Man", desc: "Asumir el manto de un héroe caído para demostrarle al mundo que puedes proteger la Tierra de manera mucho más eficiente y fría que el portador original.", img: "https://picsum.photos/id/1080/200/200", unlocked: false }
+    ];
+
+    let activeAchievementId = ACH_CONFIG.selectedId;
+
+    const achievementsOverlay = document.getElementById('achievementsModalOverlay');
+    const openAchievementsBtn = document.getElementById('openAchievementsTrigger');
+    const closeAchievementsBtn = document.getElementById('closeAchievementsTrigger');
+
+    const achUnlockedGrid = document.getElementById('ach-unlocked-grid');
+    const achLockedGrid = document.getElementById('ach-locked-grid');
+    const achFeaturedImg = document.getElementById('ach-featured-img');
+    const achFeaturedTitle = document.getElementById('ach-featured-title');
+    const achFeaturedDesc = document.getElementById('ach-featured-desc');
+
+    function initAchievementsHeaderAndFooter() {
+      document.getElementById('ach-header-title').textContent = ACH_CONFIG.headerTitle;
+      document.getElementById('ach-footer-text').textContent = ACH_CONFIG.footerText;
+    }
+
+    function updateAchievementsProgress() {
+      const total = achievements.length;
+      const unlocked = achievements.filter(a => a.unlocked).length;
+      const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+
+      document.getElementById('ach-unlocked-count').textContent = unlocked;
+      document.getElementById('ach-total-count').textContent = total;
+      document.getElementById('ach-percentage-text').textContent = `${percentage}%`;
+      document.getElementById('ach-progress-bar').style.width = `${percentage}%`;
+    }
+
+    function updateAchievementsFeatured() {
+      const activeItem = achievements.find(a => a.id === activeAchievementId) || achievements[0];
+      if (activeItem) {
+        achFeaturedImg.src = activeItem.img;
+        achFeaturedTitle.textContent = activeItem.title;
+        achFeaturedDesc.textContent = activeItem.desc;
+      }
+    }
+
+    function renderAchievementsGrids() {
+      achUnlockedGrid.innerHTML = '';
+      achLockedGrid.innerHTML = '';
+
+      achievements.forEach(item => {
+        const imgEl = document.createElement('img');
+        imgEl.src = item.img;
+        imgEl.className = 'ach-icon';
+        imgEl.alt = item.title;
+
+        if (item.id === activeAchievementId) {
+          imgEl.classList.add('selected');
+        }
+
+        imgEl.addEventListener('click', () => {
+          activeAchievementId = item.id;
+          updateAchievementsFeatured();
+          renderAchievementsGrids();
+        });
+
+        if (item.unlocked) {
+          achUnlockedGrid.appendChild(imgEl);
+        } else {
+          achLockedGrid.appendChild(imgEl);
+        }
+      });
+
+      if (ACH_CONFIG.extraUnlockedCount) {
+        const moreUnlocked = document.createElement('div');
+        moreUnlocked.className = 'ach-more-count';
+        moreUnlocked.textContent = ACH_CONFIG.extraUnlockedCount;
+        achUnlockedGrid.appendChild(moreUnlocked);
+      }
+
+      if (ACH_CONFIG.extraLockedCount) {
+        const moreLocked = document.createElement('div');
+        moreLocked.className = 'ach-more-count';
+        moreLocked.textContent = ACH_CONFIG.extraLockedCount;
+        achLockedGrid.appendChild(moreLocked);
+      }
+    }
+
+    openAchievementsBtn.addEventListener('click', () => {
+      initAchievementsHeaderAndFooter();
+      updateAchievementsProgress();
+      updateAchievementsFeatured();
+      renderAchievementsGrids();
+      achievementsOverlay.classList.add('active');
+    });
+
+    closeAchievementsBtn.addEventListener('click', () => {
+      achievementsOverlay.classList.remove('active');
+    });
+  </script>
+</body>
+</html>

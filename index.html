@@ -14,7 +14,6 @@
             }
         });
 </script>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1066,6 +1065,7 @@
       overflow: hidden;
       z-index: 2;
       padding: 10px;
+      touch-action: none;
     }
 
     /* VENTANAS TERMINAL DE PERSONAJES DENTRO DE LA PANTALLA */
@@ -1093,6 +1093,7 @@
       justify-content: space-between;
       align-items: center;
       cursor: move;
+      touch-action: none;
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1925,11 +1926,11 @@
               <img src="https://xatimg.com/image/7MgenVtCuc2y.jpg" class="board-img" alt="Neon City">
               <div class="board-title-overlay"><span class="board-title">Ojo del vigilante (uatu)</span></div>
             </div>
-              <div class="board-item">
+             <div class="board-item">
               <img src="https://xatimg.com/image/F2ZQsxvm4Xyo.jpg" class="board-img" alt="Neon City">
               <div class="board-title-overlay"><span class="board-title">Casco de Superior Iron Man</span></div>
             </div>
-              <div class="board-item">
+             <div class="board-item">
               <img src="https://xatimg.com/image/AeYsnRqiI4cZ.jpg" class="board-img" alt="Neon City">
               <div class="board-title-overlay"><span class="board-title">Tridente demoniaco de Mephisto</span></div>
                        <div class="board-item">
@@ -2087,12 +2088,12 @@
             <span>Museo</span>
           </div>
           <div class="nav-bar-item" id="openMapTrigger">
-            <i data-lucide="map"></i>
-            <span>Mapa</span>
+            <i data-lucide="atom"></i>
+            <span>Universo</span>
           </div>
           <div class="nav-bar-item" id="openAchievementsTrigger">
-            <i data-lucide="crown"></i>
-            <span>Logros</span>
+            <i data-lucide="target"></i>
+            <span>Misión</span>
           </div>
         </div>
       </div>
@@ -2332,7 +2333,7 @@
       win.style.top = `${posY}px`;
 
       win.innerHTML = `
-        <div class="ally-pop-header" onmousedown="dragAllyPopWindow(event, '${winId}')">
+        <div class="ally-pop-header" onmousedown="dragAllyPopWindow(event, '${winId}')" ontouchstart="dragAllyPopWindow(event, '${winId}')">
           <span>💻 ${data.universe}</span>
           <div class="ally-pop-controls">
             <span class="ally-pop-btn ally-pop-min" onclick="minAllyPopWindow('${winId}')"></span>
@@ -2385,8 +2386,12 @@
     function dragAllyPopWindow(e, winId) {
       const win = document.getElementById(winId);
       const bounds = alliesViewport.getBoundingClientRect();
-      let shiftX = e.clientX - win.getBoundingClientRect().left;
-      let shiftY = e.clientY - win.getBoundingClientRect().top;
+      const isTouch = e.type === 'touchstart';
+      const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+      const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+      let shiftX = clientX - win.getBoundingClientRect().left;
+      let shiftY = clientY - win.getBoundingClientRect().top;
 
       document.querySelectorAll('.ally-pop-window').forEach(w => w.style.zIndex = 10);
       win.style.zIndex = 100;
@@ -2402,16 +2407,25 @@
         win.style.top = newY + 'px';
       }
 
-      function onMouseMove(event) {
-        moveAt(event.clientX, event.clientY);
+      function onPointerMove(event) {
+        const posX = event.touches ? event.touches[0].clientX : event.clientX;
+        const posY = event.touches ? event.touches[0].clientY : event.clientY;
+        moveAt(posX, posY);
       }
 
-      document.addEventListener('mousemove', onMouseMove);
-
-      document.onmouseup = function() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.onmouseup = null;
-      };
+      if (isTouch) {
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.ontouchend = function() {
+          document.removeEventListener('touchmove', onPointerMove);
+          document.ontouchend = null;
+        };
+      } else {
+        document.addEventListener('mousemove', onPointerMove);
+        document.onmouseup = function() {
+          document.removeEventListener('mousemove', onPointerMove);
+          document.onmouseup = null;
+        };
+      }
     }
 
     function closeAllyPopWindow(winId) {
@@ -2676,28 +2690,28 @@
       if (!mapOverlay.classList.contains('active')) return;
       requestAnimationFrame(animateHoloMap);
 
-      // Rotación suave general del Nexo
-      nexoGroup.rotation.y += 0.001;
+      // Rotación suave reducida para apreciar el holograma 3D
+      nexoGroup.rotation.y += 0.0003;
 
-      // Movimiento orbital de universos
+      // Movimiento orbital de universos a menor velocidad
       universeMeshes.forEach((mesh, idx) => {
         const ud = mesh.userData;
         if (!ud.data.isCenter) {
-          ud.angle += ud.speed;
+          ud.angle += ud.speed * 0.4; // Velocidad orbital reducida
           const x = Math.cos(ud.angle) * ud.orbitRadius;
           const z = Math.sin(ud.angle) * ud.orbitRadius;
           const y = Math.sin(ud.angle * 2) * (ud.tilt * 2);
 
           if (ud.parentGroup) {
             ud.parentGroup.position.set(x, y, z);
-            ud.parentGroup.rotation.y += 0.01;
+            ud.parentGroup.rotation.y += 0.003;
           }
         } else {
-          mesh.rotation.y += 0.005;
+          mesh.rotation.y += 0.002;
         }
 
         if (ud.ringMesh) {
-          const scale = 1 + Math.sin(time * 0.004 + idx) * 0.15;
+          const scale = 1 + Math.sin(time * 0.002 + idx) * 0.1;
           ud.ringMesh.scale.set(scale, scale, scale);
         }
       });

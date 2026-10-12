@@ -1,3 +1,20 @@
+<script>
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (
+                e.ctrlKey && (e.key === 'u' || e.key === 'U') ||  
+                e.key === 'F12' ||                             
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||     
+                (e.metaKey && e.altKey && e.key === 'I')          
+            ) {
+                e.preventDefault(); 
+            }
+        });
+</script>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,7 +28,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Permanent+Marker&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
 
   <!-- Three.js & OrbitControls para el Mapa Holográfico Multiversal -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -701,10 +718,11 @@
     }
 
     .biography-quote {
-      font-family: var(--font-serif);
-      font-style: italic;
+      font-family: Josefin Sans;
+      font-style: normal;
+      font-weight: 300;
       color: #d2d5de;
-      font-size: 1.05rem;
+      font-size: .9rem;
       line-height: 1.4;
       margin-bottom: 16px;
     }
@@ -1624,7 +1642,7 @@
         <div class="sheet-name-block">
           <div class="sheet-main-name">
             <span class="user-display-name">𝕯𝖔𝖔𝖒</span>
-            <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+            <i data-lucide="chevron-down" style="width: 16px; height: 16px; color: #ffffff;"></i>
           </div>
           <div class="sheet-handle-row">
             <span class="sheet-handle">narcxssist ꞏ Freak</span>
@@ -1701,7 +1719,7 @@
                   <img src="https://xatimg.com/image/3y4woB7oymy9.jpg" alt="Epic Games" class="connection-icon-img">
                 </div>
                 <div class="connection-title">
-                  <span>Vindicvtor</span>
+                  <span>Vindicxtor</span>
                   <span class="verified-check">✓</span>
                 </div>
               </div>
@@ -1714,7 +1732,7 @@
                   <img src="https://xatimg.com/image/3DpKNgofdqwh.png" alt="PlayStation" class="connection-icon-img">
                 </div>
                 <div class="connection-title">
-                  <span>FeidD13</span>
+                  <span>Feid</span>
                   <span class="verified-check">✓</span>
                 </div>
               </div>
@@ -1741,7 +1759,7 @@
                   <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Twitch_Glitch_Logo_Purple.svg" alt="Twitch" class="connection-icon-img">
                 </div>
                 <div class="connection-title">
-                  <span>vindicvtor</span>
+                  <span>vindicxtor</span>
                   <span class="verified-check">✓</span>
                 </div>
               </div>
@@ -1824,8 +1842,8 @@
               <div class="board-title-overlay"><span class="board-title">Casco de Loki</span></div>
             </div> 
             <div class="board-item">
-              <img src="https://xatimg.com/image/pLYyB9GRBueR.jpg" class="board-img" alt="Gothic Crown">
-              <div class="board-title-overlay"><span class="board-title">Busto de Doom</span></div>
+              <img src="https://xatimg.com/image/LGjxe8oU7XVb.jpg" class="board-img" alt="Gothic Crown">
+              <div class="board-title-overlay"><span class="board-title">Casco de Thanos</span></div>
             </div>
             <div class="board-item">
               <img src="https://xatimg.com/image/RYInLUxWi6Ss.jpg" class="board-img" alt="Neon City">
@@ -1852,8 +1870,8 @@
               <div class="board-title-overlay"><span class="board-title">Cabeza Ghost Rider</span></div>
             </div>
              <div class="board-item">
-              <img src="https://xatimg.com/image/KAc1llQynHU7.jpg" class="board-img" alt="Neon City">
-              <div class="board-title-overlay"><span class="board-title">Cadenas del infierno</span></div>
+              <img src="https://xatimg.com/image/bGOPXwReUmmK.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Cabeza de Centinela</span></div>
             </div>
              <div class="board-item">
               <img src="https://xatimg.com/image/7ur6z9O1vWp1.jpg" class="board-img" alt="Neon City">
@@ -1903,6 +1921,19 @@
               <img src="https://xatimg.com/image/zPazJFlUW5fs.jpg" class="board-img" alt="Neon City">
               <div class="board-title-overlay"><span class="board-title">Casco de Galactus</span></div>
             </div>
+             <div class="board-item">
+              <img src="https://xatimg.com/image/7MgenVtCuc2y.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Ojo del vigilante (uatu)</span></div>
+            </div>
+              <div class="board-item">
+              <img src="https://xatimg.com/image/F2ZQsxvm4Xyo.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Casco de Superior Iron Man</span></div>
+            </div>
+              <div class="board-item">
+              <img src="https://xatimg.com/image/AeYsnRqiI4cZ.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Tridente demoniaco de Mephisto</span></div>
+                 
+            </div> 
           </div>
         </div>
 

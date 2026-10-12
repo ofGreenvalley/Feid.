@@ -1899,6 +1899,10 @@
               <img src="https://xatimg.com/image/0JySuWSjZQQX.jpg" class="board-img" alt="Neon City">
               <div class="board-title-overlay"><span class="board-title">Libro de Vishanti</span></div>
             </div>
+            <div class="board-item">
+              <img src="https://xatimg.com/image/zPazJFlUW5fs.jpg" class="board-img" alt="Neon City">
+              <div class="board-title-overlay"><span class="board-title">Casco de Galactus</span></div>
+            </div>
           </div>
         </div>
 
@@ -2406,16 +2410,17 @@
        DATOS Y CÓDIGO DEL MAPA HOLOGRÁFICO 3D MULTIVERSAL EN TIEMPO REAL
        ========================================================== */
     const universesData = [
-      { id: 1, isCenter: true, name: "TIERRA-616 (NÚCLEO)", line: "LÍNEA PRIMARIA", code: "UNIV-01-MAIN", desc: "Dimensión central del Multiverso y sede principal de las fuerzas de Latveria.", img: "https://picsum.photos/seed/univ1/150/150", orbitRadius: 0, speed: 0 },
-      { id: 2, isCenter: false, name: "TIERRA-1610 (ULTIMATE)", line: "RAMA SECUNDARIA", code: "UNIV-1610-ULT", desc: "Realidad con tecnología de plasma avanzada y bio-armaduras.", img: "https://picsum.photos/seed/univ2/150/150", orbitRadius: 4.8, speed: 0.008, tilt: 0.2 },
-      { id: 3, isCenter: false, name: "UNIVERSO ZOMBIE", line: "LÍNEA INFECTADA", code: "UNIV-2149-ZMB", desc: "Dimensión bajo cuarentena permanente debido a un brote viral contagioso.", img: "https://picsum.photos/seed/univ3/150/150", orbitRadius: 6.2, speed: -0.006, tilt: -0.4 },
-      { id: 4, name: "DIMENSIÓN OSCURA", line: "PLANO MÁGICO", code: "DIM-DARK-VOID", desc: "Reino de energía mística comprimida gobernado por entidades arcanas.", img: "https://picsum.photos/seed/univ4/150/150", orbitRadius: 7.5, speed: 0.005, tilt: 0.6 },
-      { id: 5, name: "TIERRA-838 (ILLUMINATI)", line: "CONSEJO MULTIVERSAL", code: "UNIV-838-ILL", desc: "Mundo pacificado y supervisado por Ultron Bots integrados.", img: "https://picsum.photos/seed/univ5/150/150", orbitRadius: 8.8, speed: -0.004, tilt: -0.1 },
-      { id: 6, name: "REINO CUÁNTICO", line: "NIVEL SUBATÓMICO", code: "MICRO-Q-NET", desc: "Plano donde el espacio y el tiempo colapsan en frecuencias cuánticas.", img: "https://picsum.photos/seed/univ6/150/150", orbitRadius: 10.0, speed: 0.007, tilt: 0.8 },
-      { id: 7, name: "TIERRA 2099", line: "FUTURO CIBERNÉTICO", code: "UNIV-928-FUT", desc: "Metrópolis futurista dominada por megacorporaciones y redes de luz.", img: "https://picsum.photos/seed/univ7/150/150", orbitRadius: 11.2, speed: -0.005, tilt: -0.5 },
-      { id: 8, name: "MUNDO DE BATALLA", line: "FRAGANZA TEMPORAL", code: "BATTLE-REALM", desc: "Mundo de fragmentos cósmicos unificados por la voluntad de Doom.", img: "https://picsum.photos/seed/univ8/150/150", orbitRadius: 12.5, speed: 0.003, tilt: 0.3 },
-      { id: 9, name: "UNIVERSO MOEBIUS", line: "BOCLE TEMPORAL", code: "TIME-LOOP-999", desc: "Bucle cronológico infinito donde los eventos suceden en ciclo continuo.", img: "https://picsum.photos/seed/univ9/150/150", orbitRadius: 13.8, speed: -0.006, tilt: -0.7 },
-      { id: 10, name: "TIERRA-X", line: "EVOLUCIÓN MUTANTE", code: "UNIV-9997-MUT", desc: "Realidad donde toda la población mundial ha desarrollado capacidades sobrehumanas.", img: "https://picsum.photos/seed/univ10/150/150", orbitRadius: 15.0, speed: 0.004, tilt: 0.4 }
+      { id: 1, isCenter: true, name: "TIERRA-616 ", line: "LÍNEA PRIMARIA", code: "UNIV-01-MAIN", desc: "El mundo principal, con la Torre de los Vengadores, el Baxter Building y el Sanctum.", img: "https://xatimg.com/image/QucyJM4UsR5J.jpg", orbitRadius: 0, speed: 0 },
+      { id: 2, isCenter: false, name: "TIERRA-1610", line: "RAMA SECUNDARIA", code: "UNIV-1610-ULT", desc: "Universo Ultimate. Divergencia: reinicio de condiciones iniciales en el 2000, con orígenes modernizados. Colapsó durante las incursiones de 2015.", img: "https://xatimg.com/image/OlQnWqGtZGvy.jpg", orbitRadius: 4.8, speed: 0.008, tilt: 0.2 },
+      { id: 3, isCenter: false, name: "TIERRA-96283", line: "LÍNEA INFECTADA", code: "UNIV-2149-ZMB", desc: "Divergencia mínima: mismas leyes físicas, línea temporal comprimida (2002-2007). Contacto multiversal confirmado en eventos de convergencia arácnida.", img: "https://xatimg.com/image/BnXd1W5hOMQ4.jpg", orbitRadius: 6.2, speed: -0.006, tilt: -0.4 },
+      { id: 4, name: "TIERRA-199999", line: "PLANO MÁGICO", code: "DIM-DARK-VOID", desc: "Divergencia: concentración anómala de eventos superhumanos desde 2008. Sufrió una extinción del 50% de la vida (el Chasquido) y su reversión.", img: "https://xatimg.com/image/9epbZBGrLtQ9.jpg", orbitRadius: 7.5, speed: 0.005, tilt: 0.6 },
+      { id: 5, name: "TIERRA-928", line: "CONSEJO MULTIVERSAL", code: "UNIV-838-ILL", desc: "Línea temporal futura (2099). Divergencia tecnológica: las corporaciones (Alchemax) sustituyeron a los estados-nación. Distopía corporativa estable.", img: "https://xatimg.com/image/jd8aiMA17IzC.jpg", orbitRadius: 8.8, speed: -0.004, tilt: -0.1 },
+      { id: 6, name: "TIERRA-58163", line: "NIVEL SUBATÓMICO", code: "MICRO-Q-NET", desc: "Anomalía de probabilidad a escala planetaria generada por la Bruja Escarlata. Inversión demográfica: los mutantes son la especie dominante.", img: "https://xatimg.com/image/MwQvZBUzHomB.jpg", orbitRadius: 10.0, speed: 0.007, tilt: 0.8 },
+      { id: 7, name: "TIERRA-90214", line: "FUTURO CIBERNÉTICO", code: "UNIV-928-FUT", desc: "Divergencia temporal fijada en la década de 1930. Nivel tecnológico de la Gran Depresión con manifestaciones superhumanas de baja potencia.", img: "https://xatimg.com/image/UyZkj5dUcEkN.jpg", orbitRadius: 11.2, speed: -0.005, tilt: -0.5 },
+      { id: 8, name: "TIERRA-807128", line: "FRAGANZA TEMPORAL", code: "BATTLE-REALM", desc: "Divergencia: los villanos se aliaron y exterminaron a los héroes. Páramo post-apocalíptico gobernado por la Hulk Gang, 50 años después de la victoria de Red Skull", img: "https://xatimg.com/image/WtFXDw7Ktdsn.jpg", orbitRadius: 12.5, speed: 0.003, tilt: 0.3 },
+      { id: 9, name: "TIERRA-295", line: "BOCLE TEMPORAL", code: "TIME-LOOP-999", desc: "Divergencia: Legión asesinó a Xavier en el pasado; Apocalipsis conquistó el planeta una década antes. Los humanos enfrentan registro o exterminio.", img: "https://xatimg.com/image/HwAwv2RjQwu8.jpg", orbitRadius: 13.8, speed: -0.006, tilt: -0.7 },
+      { id: 10, name: "TIERRA-838 (Illuminati)", line: "EVOLUCIÓN MUTANTE", code: "UNIV-9997-MUT", desc: "Divergencia: los Illuminati gobiernan en secreto para proteger el multiverso; su Strange murió enfrentando a Thanos con el Darkhold", img: "https://xatimg.com/image/jJrtHXO8P4nE.jpg", orbitRadius: 15.0, speed: 0.004, tilt: 0.4 },
+      { id: 11, name: "TIERRA-811 (Días del Futuro Pasado)", line: "EVOLUCIÓN MUTANTE", code: "UNIV-9997-MUT", desc: "Divergencia: los Centinelas ganaron la guerra mutante. Año 2013: dominación total del Programa Centinela, campos de detención y los últimos X-Men como resistencia", img: "https://xatimg.com/image/rdUtzuusWlkp.jpg", orbitRadius: 15.0, speed: 0.001, tilt: -0.2 }
     ];
 
     const mapOverlay = document.getElementById('mapModalOverlay');
@@ -2721,12 +2726,12 @@
     const achievements = [
       // LOGROS DESBLOQUEADOS (unlocked: true)
       { id: 1, title: "Robar el poder de los Beyonders", desc: "Absorber la energía de entidades cósmicas superiores para obtener omnipotencia absoluta sobre la realidad.", img: "https://xatimg.com/image/3wGi3C35khDG.jpg", unlocked: true },
-      { id: 2, title: "Crear el Battleworld", desc: "Fusionar los fragmentos de universos destruidos en un único planeta y autoproclamarse su Dios emperador.", img: "https://xatimg.com/image/OcjIsVRevG7B.png", unlocked: true },
-      { id: 3, title: "Conquistar Latveria", desc: "Derrocar al monarca actual de tu país natal, tomar el trono y asegurar inmunidad diplomática internacional.", img: "https://xatimg.com/image/B3HYBIwU6GI6.jpg", unlocked: true },
-      { id: 4, title: "Resistir el Guantelete del Infinito", desc: "Soportar un ataque directo a máxima potencia de un rival que posea las Gemas del Infinito.", img: "https://xatimg.com/image/e1fOV8mpDmk2.jpg", unlocked: true },
+      { id: 2, title: "Crear el Battleworld", desc: "Fusionar los fragmentos de universos destruidos en un único planeta y autoproclamarse su Dios emperador.", img: "https://xatimg.com/image/PuR1R3VKvce0.jpg", unlocked: true },
+      { id: 3, title: "Conquistar Latveria", desc: "Derrocar al monarca actual de tu país natal, tomar el trono y asegurar inmunidad diplomática internacional.", img: "https://xatimg.com/image/nrrBWdYGkobf.jpg", unlocked: true },
+      { id: 4, title: "Resistir el Guantelete del Infinito", desc: "Soportar un ataque directo a máxima potencia de un rival que posea las Gemas del Infinito.", img: "https://xatimg.com/image/BNIAMm8dhDFf.jpg", unlocked: true },
       { id: 5, title: "Enfrentarse a cuatro Celestiales", desc: "Desarrollar escudos térmicos y tecnología avanzada capaces de resistir el asalto simultáneo de cuatro dioses cósmicos.", img: "https://xatimg.com/image/StJdjyG3voHS.jpg", unlocked: true },
-      { id: 6, title: "Emperador del Mundo a través del control mental", desc: "Manipular a los líderes globales mediante tecnología de control mental para ser nombrado soberano legal de la Tierra.", img: "https://picsum.photos/id/1040/200/200", unlocked: true },
-      { id: 7, title: "Dominio dual de ciencia y hechicería", desc: "Estudiar hasta dominar por igual la ciencia de vanguardia y las artes místicas de alto nivel.", img: "https://picsum.photos/id/1067/200/200", unlocked: true },
+      { id: 6, title: "Emperador del Mundo a través del control mental", desc: "Manipular a los líderes globales mediante tecnología de control mental para ser nombrado soberano legal de la Tierra.", img: "https://xatimg.com/image/yofBv7vnN5b6.jpg", unlocked: true },
+      { id: 7, title: "Dominio dual de ciencia y hechicería", desc: "Estudiar hasta dominar por igual la ciencia de vanguardia y las artes místicas de alto nivel.", img: "https://xatimg.com/image/UxXdSp9pQJHM.jpg", unlocked: true },
 
       // LOGROS BLOQUEADOS (unlocked: false)
       { id: 8, title: "Rescatar un alma del infierno", desc: "Viajar a la dimensión mística de Mefisto y vencerlo en su propio terreno para liberar un alma cautiva.", img: "https://xatimg.com/image/oeLOMKAlxBqe.jpg", unlocked: false },

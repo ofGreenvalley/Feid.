@@ -754,7 +754,7 @@
     }
 
     .spotify-song-title {
-      font-size: 0.98rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #ffffff;
       white-space: nowrap;
@@ -764,14 +764,38 @@
     }
 
     .spotify-artist {
-      font-size: 0.83rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       font-weight: 500;
-      margin-top: 2px;
+      margin-top: 3px;
+    }
+
+    .spotify-play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--spotify-green);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s, background 0.2s;
+      box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+    }
+
+    .spotify-play-btn:hover {
+      transform: scale(1.08);
+      background: #1ed760;
+    }
+
+    .spotify-play-btn:active {
+      transform: scale(0.95);
     }
 
     .spotify-progress-container {
-      margin-top: 4px;
       margin-bottom: 12px;
     }
 
@@ -787,7 +811,7 @@
     .spotify-progress-bar {
       width: 0%;
       height: 100%;
-      background: var(--discord-blurple);
+      background: var(--spotify-green);
       border-radius: 4px;
       transition: width 0.1s linear;
     }
@@ -1829,13 +1853,25 @@
               <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify" class="spotify-logo-png">
             </div>
 
+            <!-- Fila principal con Cover, Nombre, Artista y Botón de Play alineado a la derecha -->
             <div class="spotify-media-row">
-              <img src="https://xatimg.com/image/Imf2c2xQFGUl.jpg" alt="Cover" class="spotify-album-cover">
+              <a href="https://open.spotify.com/track/2dWGQ975YrNma4SdfmJRDg?si=rjtPUFO8SoGtmupicKYprg&utm_source=copy-link" target="_blank" rel="noopener noreferrer">
+                <img src="https://xatimg.com/image/Imf2c2xQFGUl.jpg" alt="Cover" class="spotify-album-cover">
+              </a>
               
               <div class="spotify-song-meta">
-                <div class="spotify-song-title">Aguante</div>
-                <div class="spotify-artist">Feid</div>
+                <a href="https://open.spotify.com/track/6W3I0EwK9Wb93aV12c6M7S" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                  <div class="spotify-song-title">Aguante</div>
+                </a>
+                <a href="https://open.spotify.com/artist/2LRoI3383A92erA1O2C33f" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                  <div class="spotify-artist">Feid</div>
+                </a>
               </div>
+
+              <!-- Botón circular de Play/Pausa a la derecha -->
+              <button class="spotify-play-btn" id="playPauseBtn" title="Play / Pausa">
+                <i data-lucide="play" id="playIcon" style="width: 20px; height: 20px; fill: currentColor; margin-left: 2px;"></i>
+              </button>
             </div>
 
             <!-- Barra de progreso interactiva -->
@@ -1850,10 +1886,10 @@
             </div>
 
             <!-- Botón "Reproducir en Spotify" -->
-            <button class="spotify-action-btn" id="musicPlayToggle">
+            <a href="https://open.spotify.com/track/2dWGQ975YrNma4SdfmJRDg?si=rjtPUFO8SoGtmupicKYprg&utm_source=copy-link" target="_blank" rel="noopener noreferrer" class="spotify-action-btn">
               <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify">
               <span>Reproducir en Spotify</span>
-            </button>
+            </a>
           </div>
 
           <!-- Biografía -->
@@ -2271,7 +2307,7 @@
     lucide.createIcons();
 
     // ENLACE DIRECTO DE DROPBOX
-    const DROPBOX_AUDIO_URL = "https://www.dropbox.com/scl/fi/jajrl92h2yw3a07g0hlgi/Feid-Aguante-Lyric-Video.mp3?rlkey=1qylav9rv2cipeo5pbl8em0ip&st=i2zmij52&dl=0";
+    const DROPBOX_AUDIO_URL = "https://www.dropbox.com/scl/fi/jajrl92h2yw3a07g0hlgi/Feid-Aguante-Lyric-Video.mp3?rlkey=1qylav9rv2cipeo5pbl8em0ip&st=i2zmij52&dl=1";
 
     function formatDropboxDirectUrl(url) {
       if (!url) return "";
@@ -2289,7 +2325,8 @@
     const toast = document.getElementById('toastBox');
 
     // Controles de Audio Spotify
-    const playToggle = document.getElementById('musicPlayToggle');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
     const progressFill = document.getElementById('trackProgressFill');
     const timeline = document.getElementById('trackTimeline');
     const timeDisplay = document.getElementById('audioCurrent');
@@ -2305,13 +2342,26 @@
       }, 2500);
     }
 
+    function updatePlayIcon(isPlaying) {
+      if (isPlaying) {
+        playIcon.setAttribute('data-lucide', 'pause');
+        playIcon.style.marginLeft = '0px';
+      } else {
+        playIcon.setAttribute('data-lucide', 'play');
+        playIcon.style.marginLeft = '2px';
+      }
+      lucide.createIcons();
+    }
+
     function playAudioTrack() {
       const playPromise = audioPlayer.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
+          updatePlayIcon(true);
           showToast('Reproduciendo: FEID - Aguante');
         }).catch(err => {
           console.warn('Autoplay prevenido:', err);
+          updatePlayIcon(false);
         });
       }
     }
@@ -2319,6 +2369,7 @@
     function pauseAudioTrack() {
       if (!audioPlayer.paused) {
         audioPlayer.pause();
+        updatePlayIcon(false);
       }
     }
 
@@ -2358,12 +2409,12 @@
       return `${m}:${s}`;
     }
 
-    playToggle.addEventListener('click', () => {
+    playPauseBtn.addEventListener('click', () => {
       if (audioPlayer.paused) {
         playAudioTrack();
       } else {
         pauseAudioTrack();
-        showToast('Spotify en pausa');
+        showToast('Reproducción pausada');
       }
     });
 
@@ -2383,6 +2434,7 @@
     audioPlayer.addEventListener('ended', () => {
       progressFill.style.width = '0%';
       timeDisplay.textContent = "00:00";
+      updatePlayIcon(false);
     });
 
     timeline.addEventListener('click', (e) => {
